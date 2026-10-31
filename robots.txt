@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://setyu.com/sitemap.xml
