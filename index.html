@@ -79,6 +79,17 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .links a:hover{color:var(--on-navy)}
 .nav .btn{padding:10px 18px}
 @media (max-width:640px){.links{display:none}.nav .btn{margin-left:auto}header .brand{font-size:1.8rem}}
+/* Mobile section tabs: a swipeable row under the header so each section is one tap away */
+.mtabs{display:none}
+@media (max-width:640px){
+  html{scroll-padding-top:128px}
+  .nav{height:64px}
+  .mtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-block:0 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
+  .mtabs::-webkit-scrollbar{display:none}
+  .mtabs a{flex:none;text-decoration:none;font-weight:600;font-size:.88rem;color:var(--on-navy-muted);padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.06);white-space:nowrap;transition:background .2s,color .2s}
+  .mtabs a[aria-current="true"]{background:var(--green);color:#0d1a12}
+  .mtabs a:last-child{margin-right:24px}
+}
 
 /* Hero */
 .hero{padding-block:88px 96px}
@@ -371,6 +382,9 @@ footer .brand{font-size:1.35rem}
     <nav class="links"><a href="#what">What we build</a><a href="#how">How we work</a><a href="#case-study">Case study</a><a href="#about">About us</a><a href="#security">Security</a></nav>
     <a class="btn btn-green" href="#contact">Let's talk</a>
   </div>
+  <nav class="mtabs" id="mtabs" aria-label="Sections">
+    <a href="#top">Home</a><a href="#what">What we build</a><a href="#how">How we work</a><a href="#case-study">Case study</a><a href="#about">About</a><a href="#security">Security</a><a href="#contact">Contact</a>
+  </nav>
 </header>
 
 <main id="top">
@@ -884,6 +898,14 @@ addEventListener("resize",()=>{if(items[idx])$("ind").style.transform=`translate
 setPlaying(playing);
 go(0,true);
 })();
+
+/* ---------- Mobile section tabs ---------- */
+(()=>{const bar=document.getElementById("mtabs");if(!bar||!("IntersectionObserver" in window))return;
+  const tabs=[...bar.querySelectorAll("a")],secs=tabs.map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  const mark=id=>tabs.forEach(a=>{const on=a.getAttribute("href")==="#"+id;a.setAttribute("aria-current",on?"true":"false");
+    if(on&&getComputedStyle(bar).display!=="none")bar.scrollTo({left:a.offsetLeft-16,behavior:"smooth"})});
+  let cur="";const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&e.target.id!==cur){cur=e.target.id;mark(cur)}})},{rootMargin:"-45% 0px -50% 0px"});
+  secs.forEach(s=>io.observe(s));mark("top");})();
 </script>
 
 </body></html>
