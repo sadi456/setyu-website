@@ -8,11 +8,12 @@
 <meta property="og:title" content="Custom Business Management Software for SMEs | Setyu">
 <meta property="og:description" content="Setyu builds custom business management software for small and medium-sized businesses. Projects, clients, bookings, audits, ticketing and AI agents in one system.">
 <meta property="og:url" content="https://setyu.com/">
+<meta property="og:image" content="https://setyu.com/apple-touch-icon.png">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://setyu.com/apple-touch-icon.png">
 <meta name="twitter:title" content="Custom Business Management Software for SMEs | Setyu">
 <meta name="twitter:description" content="Setyu builds custom business management software for small and medium-sized businesses. Projects, clients, bookings, audits, ticketing and AI agents in one system.">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "ProfessionalService", "name": "Setyu", "legalName": "Setyu Limited", "url": "https://setyu.com/", "email": "team@setyu.com", "description": "Custom business management software for small and medium-sized businesses: projects, clients, bookings, audits, ticketing and AI agents in one system.", "address": {"@type": "PostalAddress", "streetAddress": "Suite A, 82 James Carter Road", "addressLocality": "Bury St. Edmunds", "postalCode": "IP28 7DE", "addressCountry": "GB"}, "areaServed": "Worldwide", "knowsAbout": ["Custom business management software", "Bespoke CRM", "Booking systems", "Audit and inspection software", "Email ticketing", "AI agents for business", "Business process automation"]}</script>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20256%20256%22%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20rx%3D%2260%22%20fill%3D%22%2318212d%22/%3E%3Cg%20transform%3D%22translate%2838%2060%29%20scale%28.75%29%22%3E%3Crect%20x%3D%229%22%20y%3D%229%22%20width%3D%22222%22%20height%3D%22162%22%20rx%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%2214%22/%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M32.00%20150.00A88%2088%200%200%201%2046.97%20100.90L77.75%20123.26A50%2050%200%200%200%2070.00%20150.00Z%22/%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M50.73%2095.72A88%2088%200%200%201%2089.78%2067.35L101.54%20103.53A50%2050%200%200%200%2081.51%20118.08Z%22/%3E%3Cpath%20fill%3D%22%2341b96a%22%20d%3D%22M95.87%2065.37A88%2088%200%200%201%20144.13%2065.37L132.38%20101.56A50%2050%200%200%200%20107.62%20101.56Z%22/%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M150.22%2067.35A88%2088%200%200%201%20189.27%2095.72L158.49%20118.08A50%2050%200%200%200%20138.46%20103.53Z%22/%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M193.03%20100.90A88%2088%200%200%201%20208.00%20150.00L170.00%20150.00A50%2050%200%200%200%20162.25%20123.26Z%22/%3E%3C/g%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -638,6 +639,8 @@ footer .brand{font-size:1.35rem}
           <label for="cf-msg">What are you looking for? <span>(optional)</span></label>
           <textarea id="cf-msg" name="message" placeholder="e.g. We're a 20-person team. We track stock in spreadsheets and want bookings and support tickets in one place."></textarea>
         </div>
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="display:none">
+        <p class="err" id="cf-senderr" hidden>That didn't go through. Please try again, or email us directly at <b>team@setyu.com</b>.</p>
         <button class="btn btn-green" type="submit">Send message <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
         <p class="note">We'll only use your details to reply to you.</p>
       </div>
@@ -679,6 +682,7 @@ form.addEventListener("submit",async e=>{
   e.preventDefault();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())){err.hidden=false;email.focus();return}
   err.hidden=true;
+  const sendErr=document.getElementById("cf-senderr");sendErr.hidden=true;
   if(!FORM_ENDPOINT){
     show(`<h3>Almost there</h3><p>Our online form isn't connected yet. Please email us at <b>${CONTACT_EMAIL}</b> and we'll reply to book a call.</p>`);
     return;
@@ -688,7 +692,7 @@ form.addEventListener("submit",async e=>{
     if(!r.ok) throw 0;
     show(`<h3>Thanks, message sent</h3><p>We'll reply to <b>${email.value.trim().replace(/[<>&"]/g,"")}</b> soon to arrange a call.</p>`);
   }catch(_){
-    show(`<h3>That didn't go through</h3><p>Please email us directly at <b>${CONTACT_EMAIL}</b>.</p>`);
+    sendErr.hidden=false; // keep the form and what they typed
   }
 });
 
@@ -851,10 +855,12 @@ go(0,true);
 
 /* ---------- Mobile section tabs ---------- */
 (()=>{const bar=document.getElementById("mtabs");if(!bar||!("IntersectionObserver" in window))return;
-  const tabs=[...bar.querySelectorAll("a")],secs=tabs.map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
+  const tabs=[...bar.querySelectorAll("a")];
+  /* "Home" points at #top (the whole page), so watch the hero for it instead */
+  const secs=tabs.map(a=>{const id=a.getAttribute("href").slice(1),el=id==="top"?document.querySelector(".hero"):document.getElementById(id);if(el)el.dataset.tab=id;return el}).filter(Boolean);
   const mark=id=>tabs.forEach(a=>{const on=a.getAttribute("href")==="#"+id;a.setAttribute("aria-current",on?"true":"false");
     if(on&&getComputedStyle(bar).display!=="none")bar.scrollTo({left:a.offsetLeft-16,behavior:"smooth"})});
-  let cur="";const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&e.target.id!==cur){cur=e.target.id;mark(cur)}})},{rootMargin:"-45% 0px -50% 0px"});
+  let cur="";const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&e.target.dataset.tab!==cur){cur=e.target.dataset.tab;mark(cur)}})},{rootMargin:"-45% 0px -50% 0px"});
   secs.forEach(s=>io.observe(s));mark("top");})();
 </script>
 
